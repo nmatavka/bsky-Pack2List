@@ -47,12 +47,36 @@ if (isset($_POST['submit'])) {
                 // Find non-mutual follows
                 $nonMutualFollows = array_diff(array_map(fn($f) => $f->did, $arrFollowings), array_map(fn($f) => $f->did, $arrFoll));
 
-                // Output the list of non-mutual follows
-                echo "<h2>Non-Mutual Follows of $TARGET_HANDLE:</h2><ul>";
-                foreach ($nonMutualFollows as $did) {
-                    echo "<li>{$did}</li>";
+                // Create a new list for non-mutual follows
+                $args = [
+                    'collection' => 'app.bsky.graph.list',
+                    'repo' => $bluesky->getAccountDid(),
+                    'record' => [
+                        'createdAt' => date('c'),
+                        '$type' => 'app.bsky.graph.list',
+                        'purpose' => 'app.bsky.graph.defs#curatelist',
+                        'name' => 'Non-Mutual Follows of ' . $TARGET_HANDLE . ' ' . date('Y-m-d'),
+                        'description' => "List of accounts $TARGET_HANDLE follows that do not follow me back.",
+                    ],
+                ];
+                if ($data2 = $bluesky->request('POST', 'com.atproto.repo.createRecord', $args)) {
+                    $newListURI = $data2->uri;
+                    // Now loop the collection of non-mutual follows into the new list
+                    foreach ($nonMutualFollows as $did) {
+                        // Add to the list
+                        $args = [
+                            'collection' => 'app.bsky.graph.listitem',
+                            'repo' => $bluesky->getAccountDid(),
+                            'record' => [
+                                'subject' => $did,
+                                'createdAt' => date('c'),
+                                '$type' => 'app.bsky.graph.listitem',
+                                'list' => $newListURI
+                            ],
+                        ];
+                        $res = $bluesky->request('POST', 'com.atproto.repo.createRecord', $args);
+                    }
                 }
-                echo "</ul>";
             }
 
             $bluesky = null;
