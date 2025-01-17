@@ -112,10 +112,10 @@ if (isset($_POST['submit'])) {
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Create a list of followers or follows based on relationship</title>
+    <title>Create a list of a third party's followers or follows based on relationship</title>
 </head>
 <body>
-    <h1>Create a list of followers or follows based on relationship</h1>
+    <h1>Create a list of a third party's followers or follows based on relationship</h1>
     <?php
     require "./app-pw.php";
     ?>

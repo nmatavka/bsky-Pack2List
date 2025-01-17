@@ -113,10 +113,10 @@ if (isset($_POST['submit'])) {
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Create a list of followers or follows</title>
+    <title>Create a list of your followers or follows</title>
 </head>
 <body>
-    <h1>Create a list of followers or follows</h1>
+    <h1>Create a list of your followers or follows</h1>
     <?php
     require "./app-pw.php";
     ?>
