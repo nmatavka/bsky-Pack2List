@@ -7,7 +7,8 @@ if(isset($_POST['submit'])) {
     $BSKY_HANDLETEST=str_replace(["@",'bsky.app'],["",'bsky.social'],$_POST['handle']);;
     $BSKY_PWTEST=$_POST['apppassword'];
     $targetUser=str_replace("@","",$_POST['targetUser']);
-    $numAccts=$_POST['numAccts'];
+    $listType = $_POST['listType']; // followers or follows
+    $numAccts = $_POST['numAccts'];
     $copyCap=.1; //Limit to only copying 10% of the follows from the account; adjust as desired 
 
 
@@ -39,15 +40,15 @@ if(isset($_POST['submit'])) {
             if ($tUsr=$bluesky->request('GET','app.bsky.actor.getProfile',$args)){
 
                 
-                //get all the follows for that user
+                // Get all the follows or followers for that user based on selection
                 $tDID=$tUsr->did;
-                $tFCount=$tUsr->followsCount;
-                //get follows of that user
+                $tFCount = $listType === 'followers' ? $tUsr->followersCount : $tUsr->followsCount;
+                // Get follows or followers of that user
                 $cursor='';
                 $arrFoll=[];
                 do {
                     $args=['actor'=>$tDID,'limit'=>100,'cursor'=>$cursor];
-                    $res=$bluesky->request('GET','app.bsky.graph.getFollows',$args);
+                    $res = $bluesky->request('GET', $listType === 'followers' ? 'app.bsky.graph.getFollowers' : 'app.bsky.graph.getFollows', $args);
                     $arrFoll=array_merge($arrFoll,(array)$res->follows);
                     $res->cursor?$cursor=$res->cursor:$cursor='';
                 }
@@ -95,7 +96,11 @@ require "./app-pw.php";
         <p>Your BSky Handle: <input type="text" name="handle" placeholder="user.bsky.social" required></p>
         <p>Your BSky <a href="https://bsky.app/settings/app-passwords" target="_blank">App Password</a>: <input type="password" name="apppassword" placeholder="abcd-1234-fghi-5678" required></p>
         <p>User from whom to poach follows: <input type="text" name="targetUser" placeholder="username.doman.name" required></p>
-        <p>How many random users to follow?: <input type="text" name="numAccts" placeholder="25" required> *Up to 10% of their total follows or this number, whichever is larger, will be followed.</p> 
+        <p>
+            <input type="radio" name="listType" value="followers" checked> Followers
+            <input type="radio" name="listType" value="follows"> Following
+        </p>
+        <p>How many random users to follow?: <input type="text" name="numAccts" placeholder="25" required> *Up to 10% of their total follows or this number, whichever is larger, will be followed.</p>
         <input type="submit" name="submit" value="Submit">
     </form>
     <?php
